@@ -129,7 +129,7 @@
   * `amount`: Decimal(18, 2)
   * `currency`: Enum (`EUR`, `USD`, `GBP`)
   * `type`: Enum (`INTERNAL`, `SEPA`, `SWIFT`, `CARD`, `LOAN`)
-  * `status`: Enum (`PENDING`, `COMPLETED`, `FAILED`, `REJECTED`)
+  * `status`: Enum (`PENDING`, `COMPLETED`, `FAILED`, `REJECTED`, `FROZEN`)
   * `createdAt`: DateTime
 
 * **Payment**
@@ -143,6 +143,7 @@
   * `createdById`: UUID (FK -> User)
   * `approvedById`: UUID (FK -> User, Nullable)
   * `createdAt`: DateTime
+  * `purpose` : String
 
 * **Beneficiary**
   * `id`: UUID (PK)
