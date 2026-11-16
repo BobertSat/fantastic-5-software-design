@@ -11,4 +11,9 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\EuroGlobe.Dashboard\EuroGlobe.Dashboard.csproj" />
+    <ProjectReference Include="..\..\EuroGlobe.Investments\EuroGlobe.Investments.csproj" />
+  </ItemGroup>
+
 </Project>
