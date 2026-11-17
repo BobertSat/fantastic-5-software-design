@@ -8,6 +8,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/EuroGlobe.Accounts.Tests/EuroGlobe.Accounts.Tests.csproj" Id="d7656708-d3d1-4057-aadc-b737e9185237" />
+    <Project Path="tests/EuroGlobe.Jobs.Tests/EuroGlobe.Jobs.Tests.csproj" />
     <Project Path="tests/EuroGlobe.Payments.Tests/EuroGlobe.Payments.Tests.csproj" Id="14c3c8da-6597-40f5-a73f-d88f17e8dc6e" />
   </Folder>
 </Solution>

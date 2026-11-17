@@ -30,6 +30,8 @@ bld/
 *.trx
 *.coverage
 *.coveragexml
+coverage.cobertura.xml
+coverage-report/
 
 # .NET Core / NuGet
 project.lock.json
