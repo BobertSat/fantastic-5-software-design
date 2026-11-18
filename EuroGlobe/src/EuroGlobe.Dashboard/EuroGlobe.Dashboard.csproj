@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\EuroGlobe.Contracts\EuroGlobe.Contracts.csproj" />
+    <ProjectReference Include="..\EuroGlobe.Contracts\EuroGlobe.Contracts.csproj" />
   </ItemGroup>
 
 </Project>
