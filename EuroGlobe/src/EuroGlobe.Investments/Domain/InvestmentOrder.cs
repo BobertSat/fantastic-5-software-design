@@ -15,8 +15,10 @@ public class InvestmentOrder
     private InvestmentOrder(Guid userId, string assetSymbol, decimal amountEur, decimal priceEur, OrderSource source, Guid? sourceTransactionId, DateTimeOffset executedAt)
     {
         if (userId == Guid.Empty)
+        {
             throw new ArgumentException("User id is required.", nameof(userId));
-
+        }
+            
         ArgumentException.ThrowIfNullOrWhiteSpace(assetSymbol);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(amountEur);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(priceEur);
@@ -35,7 +37,9 @@ public class InvestmentOrder
     public static InvestmentOrder CreateRoundUp(Guid userId, Guid transactionId, string assetSymbol, decimal amountEur, decimal priceEur, DateTimeOffset now)
     {
         if (transactionId == Guid.Empty)
+        {
             throw new ArgumentException("Round-up order requires a transaction id.", nameof(transactionId));
+        }
 
         return new InvestmentOrder(userId, assetSymbol, amountEur, priceEur, OrderSource.RoundUp, transactionId, now);
     }
