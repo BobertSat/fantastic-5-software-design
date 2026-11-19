@@ -1,8 +1,11 @@
+using EuroGlobe.Accounts;
+
 var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddAccountsModule();
 
 var app = builder.Build();
 
