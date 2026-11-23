@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\EuroGlobe.Contracts\EuroGlobe.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\EuroGlobe.Jobs\EuroGlobe.Jobs.csproj" />
   </ItemGroup>
 
   <ItemGroup>
