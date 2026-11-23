@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using EuroGlobe.Contracts.Jobs;
 using EuroGlobe.Contracts.Time;
+using EuroGlobe.Jobs.Locking;
 using EuroGlobe.Jobs.Registry;
 using EuroGlobe.Jobs.Runs;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,10 +25,12 @@ internal sealed class JobRunner(
     IJobRegistry registry,
     IJobRunStore store,
     IClock clock,
+    IJobLockProvider lockProvider,
     IServiceScopeFactory scopeFactory,
     ILogger<JobRunner> logger) : IJobRunner
 {
     internal const string SkippedMessage = "A previous run of this job is still in progress.";
+    internal const string SkippedElsewhereMessage = "Another app instance is running this job.";
     internal const string CancelledMessage = "Cancelled.";
 
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new();
@@ -40,7 +43,7 @@ internal sealed class JobRunner(
 
     /// <summary>
     /// Runs the job in a new DI scope and records the result. Job exceptions never escape;
-    /// run-store exceptions do.
+    /// run-store and lock exceptions do.
     /// </summary>
     internal async Task<JobRunRecord> RunAsync(
         RegisteredJob job, DateTimeOffset scheduledFor, JobTrigger trigger, CancellationToken cancellationToken)
@@ -48,30 +51,44 @@ internal sealed class JobRunner(
         var gate = _locks.GetOrAdd(job.Name, _ => new SemaphoreSlim(1, 1));
         if (!gate.Wait(0))
         {
-            var skipped = new JobRunRecord
-            {
-                RunId = Guid.NewGuid(),
-                JobName = job.Name,
-                Trigger = trigger,
-                ScheduledFor = scheduledFor,
-                StartedAt = clock.UtcNow,
-                FinishedAt = clock.UtcNow,
-                Status = JobRunStatus.Skipped,
-                Error = SkippedMessage,
-            };
-            await store.SaveAsync(skipped, CancellationToken.None);
-            logger.LogWarning("Job {JobName} skipped: {Reason}", job.Name, SkippedMessage);
-            return skipped;
+            return await SkipAsync(job, scheduledFor, trigger, SkippedMessage);
         }
 
         try
         {
-            return await RunExclusiveAsync(job, scheduledFor, trigger, cancellationToken);
+            var crossProcessLock = await lockProvider.TryAcquireAsync(job.Name, cancellationToken);
+            if (crossProcessLock is null)
+            {
+                return await SkipAsync(job, scheduledFor, trigger, SkippedElsewhereMessage);
+            }
+
+            await using (crossProcessLock)
+            {
+                return await RunExclusiveAsync(job, scheduledFor, trigger, cancellationToken);
+            }
         }
         finally
         {
             gate.Release();
         }
+    }
+
+    private async Task<JobRunRecord> SkipAsync(RegisteredJob job, DateTimeOffset scheduledFor, JobTrigger trigger, string reason)
+    {
+        var skipped = new JobRunRecord
+        {
+            RunId = Guid.NewGuid(),
+            JobName = job.Name,
+            Trigger = trigger,
+            ScheduledFor = scheduledFor,
+            StartedAt = clock.UtcNow,
+            FinishedAt = clock.UtcNow,
+            Status = JobRunStatus.Skipped,
+            Error = reason,
+        };
+        await store.SaveAsync(skipped, CancellationToken.None);
+        logger.LogWarning("Job {JobName} skipped: {Reason}", job.Name, reason);
+        return skipped;
     }
 
     private async Task<JobRunRecord> RunExclusiveAsync(
