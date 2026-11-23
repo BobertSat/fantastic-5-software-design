@@ -1,6 +1,6 @@
 # ADR-J001: Our own lightweight recurring-job scheduler
 
-- **Status:** Proposed
+- **Status:** Accepted (PR #8)
 - **Date:** 2026-11-17
 - **Area / owner:** Background jobs (shared infrastructure) / member 3
 - **Spec deviation:** Gap filled (the spec describes no scheduler)

@@ -1,6 +1,6 @@
 # ADR-J002: `IClock` in Contracts (with a simulated clock), not `TimeProvider`
 
-- **Status:** Proposed
+- **Status:** Accepted (PR #8)
 - **Date:** 2026-11-17
 - **Area / owner:** Background jobs / shared time abstraction / member 3
 - **Spec deviation:** Gap filled (the spec does not define a time source)

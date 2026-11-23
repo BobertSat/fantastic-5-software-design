@@ -20,5 +20,7 @@ Prefixes in use: **J** = background jobs (shared infrastructure), **M** = Smart 
 
 | ADR | Title | Status | Spec deviation |
 |---|---|---|---|
-| [J001](ADR-J001-own-job-scheduler.md) | Our own lightweight recurring-job scheduler | Proposed | Gap filled |
-| [J002](ADR-J002-iclock-and-simulated-clock.md) | `IClock` in Contracts (with a simulated clock), not `TimeProvider` | Proposed | Gap filled |
+| [J001](ADR-J001-own-job-scheduler.md) | Our own lightweight recurring-job scheduler | Accepted | Gap filled |
+| [J002](ADR-J002-iclock-and-simulated-clock.md) | `IClock` in Contracts (with a simulated clock), not `TimeProvider` | Accepted | Gap filled |
+| [J004](ADR-J004-ci-coverage-gate.md) | CI coverage gate for Part 3 (jobs + mortgages) | Proposed | No |
+| [J005](ADR-J005-dev-db-and-scheduler-default.md) | Scheduler off by default in Development; local Postgres per developer | Proposed | Gap filled |
