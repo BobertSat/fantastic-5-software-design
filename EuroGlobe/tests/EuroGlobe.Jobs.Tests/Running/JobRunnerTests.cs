@@ -1,4 +1,5 @@
 using EuroGlobe.Contracts.Jobs;
+using EuroGlobe.Jobs.Locking;
 using EuroGlobe.Jobs.Running;
 using EuroGlobe.Jobs.Runs;
 using EuroGlobe.Jobs.Tests.TestDoubles;
@@ -155,6 +156,38 @@ public sealed class JobRunnerTests
         var second = await ctx.Runner.RunNowAsync(DailyJob.JobName, CancellationToken.None);
 
         Assert.Equal(JobRunStatus.Succeeded, second.Status);
+    }
+
+    [Fact]
+    public async Task RunNowAsync_LockHeldByAnotherInstance_RecordsSkippedWithoutRunning()
+    {
+        var locks = new FakeLockProvider { Available = false };
+        using var ctx = JobsTestContext.Create(s => s.AddSingleton<IJobLockProvider>(locks).AddRecurringJob<DailyJob>());
+
+        var run = await ctx.Runner.RunNowAsync(DailyJob.JobName, CancellationToken.None);
+
+        Assert.Equal(JobRunStatus.Skipped, run.Status);
+        Assert.Equal(JobRunner.SkippedElsewhereMessage, run.Error);
+        Assert.Empty(ctx.Probe.Runs);
+    }
+
+    [Fact]
+    public async Task RunNowAsync_LockAcquired_HeldDuringRunAndReleasedAfterwards()
+    {
+        var locks = new FakeLockProvider();
+        using var ctx = JobsTestContext.Create(s => s.AddSingleton<IJobLockProvider>(locks).AddRecurringJob<DailyJob>());
+        bool? heldDuringRun = null;
+        ctx.Probe.Behaviors[DailyJob.JobName] = (_, _) =>
+        {
+            heldDuringRun = locks.Held;
+            throw new InvalidOperationException("job fails");
+        };
+
+        await ctx.Runner.RunNowAsync(DailyJob.JobName, CancellationToken.None);
+
+        Assert.Equal(DailyJob.JobName, locks.LastJobName);
+        Assert.True(heldDuringRun);
+        Assert.False(locks.Held);
     }
 
     [Fact]

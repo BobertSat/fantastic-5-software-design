@@ -1,6 +1,9 @@
 using EuroGlobe.Contracts.Jobs;
 using EuroGlobe.Contracts.Time;
+using EuroGlobe.Jobs.Locking;
+using EuroGlobe.Jobs.Persistence;
 using EuroGlobe.Jobs.Registry;
+using EuroGlobe.Jobs.Runs;
 using EuroGlobe.Jobs.Running;
 using EuroGlobe.Jobs.Scheduling;
 using EuroGlobe.Jobs.Tests.TestDoubles;
@@ -48,6 +51,38 @@ public sealed class JobsServiceCollectionExtensionsTests
         Assert.Equal(15, provider.GetRequiredService<JobsOptions>().TickSeconds);
         Assert.IsType<JobRunner>(provider.GetRequiredService<IJobRunner>());
         Assert.Empty(provider.GetRequiredService<IJobRegistry>().Jobs);
+        Assert.IsType<InMemoryJobRunStore>(provider.GetRequiredService<IJobRunStore>());
+        Assert.IsType<NoOpJobLockProvider>(provider.GetRequiredService<IJobLockProvider>());
+
+        var runtime = provider.GetRequiredService<JobsRuntime>();
+        Assert.True(runtime.SchedulerEnabled);
+        Assert.False(runtime.PersistentHistory);
+        Assert.False(runtime.SimulatedClock);
+    }
+
+    [Fact]
+    public void AddEuroGlobeJobs_WithConnectionString_UsesDatabaseStoreAndAdvisoryLock()
+    {
+        // Resolving these doesn't open a connection, so no database is needed here.
+        using var provider = Build(Environments.Development,
+            ("ConnectionStrings:EuroGlobe", "Host=localhost;Database=unused;Username=u;Password=p"),
+            ("Jobs:UseSimulatedClock", "true"));
+
+        Assert.IsType<EfJobRunStore>(provider.GetRequiredService<IJobRunStore>());
+        Assert.IsType<PostgresAdvisoryJobLockProvider>(provider.GetRequiredService<IJobLockProvider>());
+
+        var runtime = provider.GetRequiredService<JobsRuntime>();
+        Assert.False(runtime.SchedulerEnabled);
+        Assert.True(runtime.PersistentHistory);
+        Assert.True(runtime.SimulatedClock);
+    }
+
+    [Fact]
+    public void AddEuroGlobeJobs_BlankConnectionString_FallsBackToInMemory()
+    {
+        using var provider = Build(Environments.Production, ("ConnectionStrings:EuroGlobe", " "));
+
+        Assert.IsType<InMemoryJobRunStore>(provider.GetRequiredService<IJobRunStore>());
     }
 
     [Fact]
