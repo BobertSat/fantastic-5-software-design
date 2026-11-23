@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\EuroGlobe.Dashboard\EuroGlobe.Dashboard.csproj" />
     <ProjectReference Include="..\EuroGlobe.Investments\EuroGlobe.Investments.csproj" />
+    <ProjectReference Include="..\EuroGlobe.Jobs\EuroGlobe.Jobs.csproj" />
   </ItemGroup>
 
 </Project>
