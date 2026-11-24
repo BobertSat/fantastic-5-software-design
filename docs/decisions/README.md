@@ -14,7 +14,7 @@ Each ADR cites the spec section/figure/screen and, where relevant, the point in 
 2. Fill in Status, Context, Decision, Alternatives, Consequences and Spec deviation.
 3. Add a row to the index below in the same PR as the code that introduces the decision.
 
-Prefixes in use: **J** = background jobs (shared infrastructure), **M** = Smart Mortgage. Other modules can add their own letter.
+Prefixes in use: **J** = background jobs (shared infrastructure), **M** = Smart Mortgage, **I** = Investments. Other modules can add their own letter.
 
 ## Index
 
@@ -22,3 +22,5 @@ Prefixes in use: **J** = background jobs (shared infrastructure), **M** = Smart 
 |---|---|---|---|
 | [J001](ADR-J001-own-job-scheduler.md) | Our own lightweight recurring-job scheduler | Proposed | Gap filled |
 | [J002](ADR-J002-iclock-and-simulated-clock.md) | `IClock` in Contracts (with a simulated clock), not `TimeProvider` | Proposed | Gap filled |
+| [I001](ADR-I001-investments-as-module.md) | Investments as an isolated module, not a separate microservice | Proposed | Yes |
+| [I002](ADR-I002-strategy-allocation-and-price-sources.md) | Strategy pattern for round-up allocation and price sources | Proposed | Gap filled |
