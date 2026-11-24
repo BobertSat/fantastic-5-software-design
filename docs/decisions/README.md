@@ -22,3 +22,4 @@ Prefixes in use: **J** = background jobs (shared infrastructure), **M** = Smart 
 |---|---|---|---|
 | [J001](ADR-J001-own-job-scheduler.md) | Our own lightweight recurring-job scheduler | Proposed | Gap filled |
 | [J002](ADR-J002-iclock-and-simulated-clock.md) | `IClock` in Contracts (with a simulated clock), not `TimeProvider` | Proposed | Gap filled |
+| [I003](ADR-I003-market-price-fallback.md) | Market price with timeout and last-known-price fallback | Proposed | Gap filled |
