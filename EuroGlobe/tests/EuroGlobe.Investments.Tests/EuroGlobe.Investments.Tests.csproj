@@ -25,7 +25,6 @@
 
   <ItemGroup>
     <Folder Include="Allocation\" />
-    <Folder Include="MarketData\" />
     <Folder Include="Analytics\" />
   </ItemGroup>
 
