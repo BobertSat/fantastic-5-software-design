@@ -2,16 +2,16 @@ namespace EuroGlobe.Accounts.Domain;
 
 public class GroupAccount : IAccount
 {
-    private readonly List<IAccount> _children = [];
+    private readonly List<IAccount> _members = [];
 
     public Guid Id { get; } = Guid.NewGuid();
     public string Name { get; }
     public string Currency { get; }
-    public IReadOnlyList<IAccount> Children => _children;
+    public IReadOnlyList<IAccount> Members => _members;
 
     public GroupAccount(string name, string currency)
     {
-        if (string.IsNullOrWhiteSpace(name)) 
+        if (string.IsNullOrWhiteSpace(name))
         {
             throw new ArgumentException("Name is required.", nameof(name));
         }
@@ -20,26 +20,42 @@ public class GroupAccount : IAccount
         Currency = currency.ToUpperInvariant();
     }
 
-    public void Add(IAccount child)
+    public void AddAccount(IAccount account)
     {
-        if (ReferenceEquals(child, this))
+        ArgumentNullException.ThrowIfNull(account);
+
+        if (ReferenceEquals(account, this) || (account is GroupAccount g && g.Contains(this)))
         {
             throw new InvalidOperationException("A group cannot contain itself.");
         }
-        if (child.Currency != Currency)
+        if (account.Currency != Currency)
         {
-            throw new CurrencyMismatchException(Currency, child.Currency);
+            throw new CurrencyMismatchException(Currency, account.Currency);
         }
-        if (_children.Any(c => c.Id == child.Id))
+        if (_members.Any(m => m.Id == account.Id))
         {
             return;
         }
 
-        _children.Add(child);
+        _members.Add(account);
     }
 
-    public bool Remove(Guid childId) => _children.RemoveAll(c => c.Id == childId) > 0;
+    public bool RemoveAccount(IAccount account)
+    {
+        ArgumentNullException.ThrowIfNull(account);
+        return _members.RemoveAll(m => m.Id == account.Id) > 0;
+    }
 
-    public decimal GetBalance() => _children.Sum(c => c.GetBalance());
-    public decimal GetAvailableBalance() => _children.Sum(c => c.GetAvailableBalance());
+    public decimal CalculateBalance() => _members.Sum(m => m.CalculateBalance());
+
+    public void ApplyFees()
+    {
+        foreach (var member in _members)
+        {
+            member.ApplyFees();
+        }
+    }
+
+    private bool Contains(IAccount target) =>
+        _members.Any(m => ReferenceEquals(m, target) || (m is GroupAccount g && g.Contains(target)));
 }

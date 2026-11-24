@@ -1,3 +1,5 @@
+using EuroGlobe.Contracts.Time;
+
 namespace EuroGlobe.Accounts.Domain;
 
 public class IndividualAccount : IAccount
@@ -7,14 +9,15 @@ public class IndividualAccount : IAccount
     public string Iban { get; private set; }
     public string Currency { get; private set; }
     public AccountType Type { get; private set; }
+    public decimal MonthlyFee { get; private set; }
     public decimal Balance { get; private set; }
     public decimal ReservedAmount { get; private set; }
     public AccountStatus Status { get; private set; } = AccountStatus.Active;
-    public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+    public DateTimeOffset CreatedAt { get; private set; }
 
     public decimal AvailableBalance => Balance - ReservedAmount;
 
-    public IndividualAccount(Guid ownerId, string iban, string currency, AccountType type = AccountType.Individual)
+    public IndividualAccount(Guid ownerId, string iban, string currency, IClock clock, AccountType type = AccountType.Individual, decimal monthlyFee = 0m)
     {
         if (string.IsNullOrWhiteSpace(iban))
         {
@@ -26,14 +29,30 @@ public class IndividualAccount : IAccount
             throw new ArgumentException("Currency must be a 3-letter ISO code.", nameof(currency));
         }
 
+        if (monthlyFee < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(monthlyFee), "Fee cannot be negative.");
+        }
+
         OwnerId = ownerId;
         Iban = iban;
         Currency = currency.ToUpperInvariant();
         Type = type;
+        MonthlyFee = monthlyFee;
+        CreatedAt = clock.UtcNow;
     }
 
-    public decimal GetBalance() => Balance;
-    public decimal GetAvailableBalance() => AvailableBalance;
+    public decimal CalculateBalance() => Balance;
+
+    public void ApplyFees()
+    {
+        if (MonthlyFee <= 0 || Status != AccountStatus.Active || MonthlyFee > AvailableBalance)
+        {
+            return;
+        }
+
+        Debit(MonthlyFee);
+    }
 
     public void Credit(decimal amount)
     {

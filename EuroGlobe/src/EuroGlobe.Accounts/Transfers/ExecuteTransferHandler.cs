@@ -2,17 +2,20 @@ using System.Globalization;
 using EuroGlobe.Accounts.Domain;
 using EuroGlobe.Accounts.Repositories;
 using EuroGlobe.Contracts.Interfaces;
+using EuroGlobe.Contracts.Time;
 
 namespace EuroGlobe.Accounts.Transfers;
 
 public sealed class ExecuteTransferHandler(
     ITransactionRepository ledger,
     IAuditLog audit,
-    ISepaGateway sepa) : TransferHandler
+    ISepaGateway sepa,
+    IClock clock) : TransferHandler
 {
     private readonly ITransactionRepository _ledger = ledger ?? throw new ArgumentNullException(nameof(ledger));
     private readonly IAuditLog _audit = audit ?? throw new ArgumentNullException(nameof(audit));
     private readonly ISepaGateway _sepa = sepa ?? throw new ArgumentNullException(nameof(sepa));
+    private readonly IClock _clock = clock ?? throw new ArgumentNullException(nameof(clock));
 
     public override async Task HandleAsync(TransferContext context, CancellationToken cancellationToken)
     {
@@ -55,7 +58,7 @@ public sealed class ExecuteTransferHandler(
 
         await _ledger.AddAsync(
             new Transaction(context.From.Id, TransactionType.Transfer, -context.Amount, context.Currency,
-                $"Transfer to {context.ToIban}", context.ToIban, context.TransferId),
+                $"Transfer to {context.ToIban}", _clock, context.ToIban, context.TransferId),
             cancellationToken);
 
         await _audit.LogAsync(
@@ -70,7 +73,7 @@ public sealed class ExecuteTransferHandler(
         {
             await _ledger.AddAsync(
                 new Transaction(context.To.Id, TransactionType.Transfer, context.Amount, context.Currency,
-                    $"Transfer from {context.From.Iban}", context.From.Iban, context.TransferId),
+                    $"Transfer from {context.From.Iban}", _clock, context.From.Iban, context.TransferId),
                 cancellationToken);
 
             await _audit.LogAsync(

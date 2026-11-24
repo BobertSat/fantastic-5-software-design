@@ -4,6 +4,6 @@ public interface IAccount
 {
     Guid Id { get; }
     string Currency { get; }
-    decimal GetBalance();
-    decimal GetAvailableBalance();
+    decimal CalculateBalance();
+    void ApplyFees();
 }

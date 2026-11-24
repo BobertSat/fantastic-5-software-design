@@ -1,18 +1,20 @@
-using System.Globalization;
 using EuroGlobe.Accounts.Domain;
 using EuroGlobe.Accounts.Repositories;
 using EuroGlobe.Accounts.Transfers;
 using EuroGlobe.Contracts.Interfaces;
+using EuroGlobe.Contracts.Time;
+using System.Globalization;
 
 namespace EuroGlobe.Accounts.Services;
 
 public sealed class AccountService(IAccountRepository accounts, ITransactionRepository ledger,
-    IAuditLog audit, IScaService sca, ISepaGateway sepa) : IAccountService
+    IAuditLog audit, IScaService sca, ISepaGateway sepa, IClock clock) : IAccountService
 {
     private readonly IAccountRepository _accounts = accounts;
     private readonly ITransactionRepository _ledger = ledger;
     private readonly IAuditLog _audit = audit;
-    private readonly TransferPipeline _pipeline = new(accounts, ledger, audit, sca, sepa);
+    private readonly IClock _clock = clock;
+    private readonly TransferPipeline _pipeline = new(accounts, ledger, audit, sca, sepa, clock);
     private readonly SemaphoreSlim _gate = new(1, 1);
 
     public async Task<decimal> GetBalanceAsync(Guid accountId, CancellationToken cancellationToken = default)
@@ -26,6 +28,7 @@ public sealed class AccountService(IAccountRepository accounts, ITransactionRepo
         {
             var acc = await RequireAsync(accountId, cancellationToken);
             acc.Reserve(amount);
+            await _accounts.UpdateAsync(acc, cancellationToken);
             await _audit.LogAsync(acc.OwnerId, "ACCOUNT_RESERVE", "Account", acc.Id.ToString(),
                 $"{Fmt(amount)} {acc.Currency}", cancellationToken);
         }, cancellationToken);
@@ -35,6 +38,7 @@ public sealed class AccountService(IAccountRepository accounts, ITransactionRepo
         {
             var acc = await RequireAsync(accountId, cancellationToken);
             acc.Release(amount);
+            await _accounts.UpdateAsync(acc, cancellationToken);
             await _audit.LogAsync(acc.OwnerId, "ACCOUNT_RELEASE", "Account", acc.Id.ToString(),
                 $"{Fmt(amount)} {acc.Currency}", cancellationToken);
         }, cancellationToken);
@@ -44,7 +48,8 @@ public sealed class AccountService(IAccountRepository accounts, ITransactionRepo
         {
             var acc = await RequireAsync(accountId, cancellationToken);
             acc.Debit(amount);
-            await _ledger.AddAsync(new Transaction(acc.Id, TransactionType.Withdrawal, -amount, acc.Currency, description), cancellationToken);
+            await _ledger.AddAsync(new Transaction(acc.Id, TransactionType.Withdrawal, -amount, acc.Currency, description, _clock), cancellationToken);
+            await _accounts.UpdateAsync(acc, cancellationToken);
             await _audit.LogAsync(acc.OwnerId, "ACCOUNT_DEBIT", "Account", acc.Id.ToString(),
                 $"{Fmt(amount)} {acc.Currency}: {description}", cancellationToken);
         }, cancellationToken);
@@ -54,7 +59,8 @@ public sealed class AccountService(IAccountRepository accounts, ITransactionRepo
         {
             var acc = await RequireAsync(accountId, cancellationToken);
             acc.Credit(amount);
-            await _ledger.AddAsync(new Transaction(acc.Id, TransactionType.Deposit, amount, acc.Currency, description), cancellationToken);
+            await _ledger.AddAsync(new Transaction(acc.Id, TransactionType.Deposit, amount, acc.Currency, description, _clock), cancellationToken);
+            await _accounts.UpdateAsync(acc, cancellationToken);
             await _audit.LogAsync(acc.OwnerId, "ACCOUNT_CREDIT", "Account", acc.Id.ToString(),
                 $"{Fmt(amount)} {acc.Currency}: {description}", cancellationToken);
         }, cancellationToken);
@@ -75,6 +81,9 @@ public sealed class AccountService(IAccountRepository accounts, ITransactionRepo
 
         return transferId;
     }
+
+    public async Task<IReadOnlyList<dynamic>> GetAccountsAsync(Guid userId, CancellationToken cancellationToken = default)
+        => (await _accounts.ListByOwnerAsync(userId, cancellationToken)).Cast<dynamic>().ToList().AsReadOnly();
 
     private async Task<IndividualAccount> RequireAsync(Guid id, CancellationToken ct)
         => await _accounts.GetByIdAsync(id, ct) ?? throw new AccountNotFoundException(id);

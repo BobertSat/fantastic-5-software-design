@@ -9,4 +9,5 @@ public interface IAccountService
     Task DebitAsync(Guid accountId, decimal amount, string description, CancellationToken cancellationToken = default);
     Task CreditAsync(Guid accountId, decimal amount, string description, CancellationToken cancellationToken = default);
     Task<Guid> TransferAsync(Guid fromAccountId, string toIban, decimal amount, string currency, string totpCode, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<dynamic>> GetAccountsAsync(Guid userId, CancellationToken cancellationToken = default);
 }
