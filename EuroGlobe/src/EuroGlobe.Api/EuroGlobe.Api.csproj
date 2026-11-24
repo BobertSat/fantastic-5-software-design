@@ -13,6 +13,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EuroGlobe.Accounts\EuroGlobe.Accounts.csproj" />
+    <ProjectReference Include="..\EuroGlobe.Dashboard\EuroGlobe.Dashboard.csproj" />
+    <ProjectReference Include="..\EuroGlobe.Investments\EuroGlobe.Investments.csproj" />
   </ItemGroup>
 
 </Project>
