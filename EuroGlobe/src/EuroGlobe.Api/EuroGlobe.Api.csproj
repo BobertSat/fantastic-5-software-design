@@ -9,12 +9,17 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.15">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\EuroGlobe.Accounts\EuroGlobe.Accounts.csproj" />
     <ProjectReference Include="..\EuroGlobe.Dashboard\EuroGlobe.Dashboard.csproj" />
     <ProjectReference Include="..\EuroGlobe.Investments\EuroGlobe.Investments.csproj" />
+    <ProjectReference Include="..\EuroGlobe.Jobs\EuroGlobe.Jobs.csproj" />
   </ItemGroup>
 
 </Project>

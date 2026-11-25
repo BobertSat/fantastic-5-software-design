@@ -5,6 +5,7 @@
     <Project Path="src/EuroGlobe.Contracts/EuroGlobe.Contracts.csproj" />
     <Project Path="src/EuroGlobe.Dashboard/EuroGlobe.Dashboard.csproj" Id="37e577b5-bffd-4cc0-8328-0e3e1e2f2d7c" />
     <Project Path="src/EuroGlobe.Investments/EuroGlobe.Investments.csproj" Id="c14d91ce-7455-4988-9a52-f6e81532b0b3" />
+    <Project Path="src/EuroGlobe.Jobs/EuroGlobe.Jobs.csproj" />
     <Project Path="src/EuroGlobe.Messaging/EuroGlobe.Messaging.csproj" />
     <Project Path="src/EuroGlobe.Payments/EuroGlobe.Payments.csproj" Id="d8f14cb6-1265-47ad-ad4e-ab593646689a" />
   </Folder>

@@ -1,0 +1,50 @@
+# Coverage gate for Part 3 (background jobs + Smart Mortgage), see ADR-J004.
+# Fails the check when line or branch coverage of the gated code drops below 70 %.
+name: Part 3 coverage gate (jobs + mortgages)
+
+on:
+  pull_request:
+    paths:
+      - "EuroGlobe/src/EuroGlobe.Jobs/**"
+      - "EuroGlobe/src/EuroGlobe.Mortgages/**"
+      - "EuroGlobe/src/EuroGlobe.Contracts/**"
+      - "EuroGlobe/src/EuroGlobe.Api/Controllers/Jobs/**"
+      - "EuroGlobe/src/EuroGlobe.Api/Controllers/Mortgages/**"
+      - "EuroGlobe/tests/EuroGlobe.Jobs.Tests/**"
+      - "EuroGlobe/tests/EuroGlobe.Mortgages.Tests/**"
+      - ".github/workflows/mortgages-coverage.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: EuroGlobe
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore EuroGlobe.slnx
+
+      - name: Build
+        run: dotnet build EuroGlobe.slnx --no-restore -c Release
+
+      - name: Test with coverage gate (>= 70 % line and branch)
+        run: dotnet test EuroGlobe.slnx --no-build -c Release /p:CollectCoverage=true
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-cobertura
+          path: EuroGlobe/tests/**/TestResults/coverage.cobertura.xml
+          if-no-files-found: ignore
