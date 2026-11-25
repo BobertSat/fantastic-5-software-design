@@ -12,7 +12,7 @@ public class Holding
 
     public Holding(Guid userId, string assetSymbol)
     {
-        if(userId == Guid.Empty)
+        if (userId == Guid.Empty)
         {
             throw new ArgumentException("User id is required.", nameof(userId));
         }
@@ -28,12 +28,12 @@ public class Holding
     {
         ArgumentNullException.ThrowIfNull(order);
 
-        if(order.UserId != UserId)
+        if (order.UserId != UserId)
         {
             throw new ArgumentException("Order belongs to a different user.", nameof(order));
         }
 
-        if(order.AssetSymbol != AssetSymbol)
+        if (order.AssetSymbol != AssetSymbol)
         {
             throw new ArgumentException("Order is for a different asset.", nameof(order));
         }
@@ -46,7 +46,7 @@ public class Holding
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(units);
 
-        if(units > Units)
+        if (units > Units)
         {
             throw new InvalidOperationException("Cannot sell more unit than owned.");
         }
@@ -56,7 +56,7 @@ public class Holding
         Units -= units;
         CostBasisEur -= costReduction;
 
-        if(Units == 0)
+        if (Units == 0)
         {
             CostBasisEur = 0;
         }
