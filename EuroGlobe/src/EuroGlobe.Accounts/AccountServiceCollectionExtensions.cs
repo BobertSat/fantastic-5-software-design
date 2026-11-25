@@ -11,9 +11,8 @@ public static class AccountServiceCollectionExtensions
 {
     public static IServiceCollection AddAccountsModule(this IServiceCollection services)
     {
-        services.AddScoped<IAccountRepository, InMemoryAccountRepository>();
-        services.AddScoped<ITransactionRepository, InMemoryTransactionRepository>();
-        services.AddScoped<IClock, SystemClock>();
+        services.AddSingleton<IAccountRepository, InMemoryAccountRepository>();
+        services.AddSingleton<ITransactionRepository, InMemoryTransactionRepository>();
         services.AddScoped<IAuditLog, ConsoleAuditLog>();
         services.AddScoped<IScaService, MockScaService>();
         services.AddScoped<ISepaGateway, MockSepaGateway>();

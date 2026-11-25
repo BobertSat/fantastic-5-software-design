@@ -1,10 +1,11 @@
+using System.Collections.Concurrent;
 using EuroGlobe.Accounts.Domain;
 
 namespace EuroGlobe.Accounts.Repositories;
 
 public sealed class InMemoryAccountRepository : IAccountRepository
 {
-    private readonly Dictionary<Guid, IndividualAccount> _accounts = new();
+    private readonly ConcurrentDictionary<Guid, IndividualAccount> _accounts = new();
 
     public Task<IndividualAccount?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
