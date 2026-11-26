@@ -2,7 +2,6 @@
 using EuroGlobe.Accounts.Services;
 using EuroGlobe.Accounts.Transfers;
 using EuroGlobe.Contracts.Interfaces;
-using EuroGlobe.Contracts.Time;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EuroGlobe.Accounts;
